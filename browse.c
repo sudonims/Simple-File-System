@@ -12,10 +12,36 @@ super_t sb;
 char directory[16];
 char par_dir[16];
 
-void change_directory(char *nm)
+inode_t* find(char*nm,int fs_handle)
 {
-    strcpy(par_dir,directory);
-    strcpy(directory,nm);
+    inode_t inode,inode1={.type=-1};
+    lseek(fs_handle,sb.inode_tbl_blk_start*sb.blk_size,SEEK_SET);
+    for(int i=0;i<sb.inode_count;i++)
+    {
+        read(fs_handle,&inode,sizeof(inode_t));
+        if(strcmp(inode.name,nm)==0)
+        {
+            return &inode;
+        }
+    }
+    return NULL;
+}
+ 
+void change_directory(char *nm,int fs_handle)
+{
+    if(find(nm,fs_handle)->type==2 || strcmp(nm,"root")==0)
+    {
+        strcpy(par_dir,directory);
+        strcpy(directory,nm);
+    }
+    else if(find(nm,fs_handle)->type==1)
+    {
+        printf("It is a file not a directory.\n");
+    }
+    else if(find(nm,fs_handle)==NULL)
+    {
+        printf("Directory not found\n");
+    }
 }
 
 void create_file(int fs_handle,char *nm,int type)
@@ -27,7 +53,7 @@ void create_file(int fs_handle,char *nm,int type)
     {
         read(fs_handle,&inode,sizeof(inode_t));
         if(!inode.name[0]){ break; }
-        if(strcmp(inode.name,nm)==0)
+        if(strcmp(inode.name,nm)==0 && strcmp(inode.dir,directory)==0)
         {
             printf("File already exist\n");
             return ;
@@ -74,6 +100,7 @@ void remove_file(int fs_handle,char *nm)
     }
     if(strcmp(inode.dir,directory)!=0)
     {
+        printf("%s %s",inode.dir,directory);
         printf("File not found in current directory.Try changing directory\n");
         return;
     }
@@ -148,7 +175,7 @@ void browse(int fs_handle)
             {
                 fn=cmd+2; //skips spaces 
                 while(*fn==' ') { fn++ ;}
-                change_directory(fn);
+                change_directory(fn,fs_handle);
             }
         } else if(strncmp(cmd,"mkdir",5)==0){ //creates directory
             if(cmd[5]==' ')
