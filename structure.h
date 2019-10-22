@@ -2,9 +2,10 @@
 #define STRUCTURE_H
 
 #define MAGIC 0x1304ABCD
-#define BLOCK_SIZE 512 //bytes
+#define FS_BLOCK_SIZE 512 //bytes
 #define INODE_SIZE 128 //bytes
 #define BLOCK_COUNT ((INODE_SIZE - (48+4*4)) / 4) 
+
 
 typedef unsigned int uint_t;
 typedef unsigned char uchar_t;
@@ -19,7 +20,7 @@ typedef struct superblock
   uint_t inode_tbl_blk_start;
   uint_t inode_count;
   uint_t data_blk_start;
-  uint_t reserved[BLOCK_SIZE/4 -8];
+  uint_t reserved[FS_BLOCK_SIZE/4 -8];
 }super_t;
 
 typedef struct inode
