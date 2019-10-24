@@ -227,7 +227,7 @@ void fs_read(int fs_handle,char *nm)
     }
 }
 
-void fs_write(int fs_handle,char *nm)
+void fs_write(int fs_handle,char *nm) //Sometimes doesn't write properly
 {
     inode_t inode;
     int i=lookup(fs_handle,nm,&inode);
